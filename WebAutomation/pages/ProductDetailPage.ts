@@ -6,8 +6,8 @@ export class ProductDetailPage {
 
   // İlk ürüne tıklama
   async openFirstProduct() {
-    const firstProduct = this.page.locator('[data-test-id="title-1"]').nth(1);
-    await expect(firstProduct).toBeVisible();
+    const firstProduct = this.page.locator('[data-test-id="title-1"]').nth(0);
+    await firstProduct.scrollIntoViewIfNeeded();
     await firstProduct.click();
     await this.page.waitForTimeout(5000); // Detay sayfasının tam yüklenmesi için bekleme
   }

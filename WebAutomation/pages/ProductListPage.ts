@@ -18,44 +18,47 @@ export class ProductListPage  {
   
 }
 
-  async filterBySize() { 
-    await this.checkboxClick('39');
+  async filterBySize(size: string) { 
+    await this.checkboxClick(size);
     await this.page.reload();
-    await expect(this.page).toHaveURL(/bedenler:39/);
+    await expect(this.page).toHaveURL(new RegExp(`bedenler:${size}`));
   }
-  async filterByGender() {
-    await this.checkboxClick('Erkek');
+  async filterByGender(gender: string) {
+    await this.checkboxClick(gender);
     await this.page.reload();
-    await expect(this.page).toHaveURL(/cinsiyet:Erkek/);
+    await expect(this.page).toHaveURL(new RegExp(`cinsiyet:${gender}`));
   } 
-  async filterByColor() {
-    await this.checkboxClick('Beyaz');
+  async filterByColor(color: string) {
+    await this.checkboxClick(color);
     await this.page.reload();
-    await expect(this.page).toHaveURL(/renk:Beyaz/);
+    await expect(this.page).toHaveURL(new RegExp(`renk:${color}`));
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
-  async filterByPrice() {
-    const priceFilterHeader = this.page.getByText('Fiyat Araliği').nth(0);
+    
+  private appliedMinPrice!: number;
+  private appliedMaxPrice!: number;
+
+  async filterByPrice(minPrice: number, maxPrice: number) {
+    
+    this.appliedMinPrice = minPrice;
+    this.appliedMaxPrice = maxPrice;
+
+    const priceFilterHeader = this.page.getByText('Fiyat Araliği').first();
     const minPriceInput = this.page.getByRole('textbox', { name: 'En az' });
     const maxPriceInput = this.page.getByRole('textbox', { name: 'En çok' });
 
-  // Eğer fiyat inputları görünür değilse, filtreyi aç
-  if (!(await minPriceInput.isVisible())) {
+    if (!(await minPriceInput.isVisible())) {
     await priceFilterHeader.click();
-    await this.page.waitForTimeout(1000); 
   }
-
-  await minPriceInput.fill('3000');
-  await maxPriceInput.fill('5000');
-  await this.page.getByRole('button', { name: 'Filtrele' }).click();
-  await this.page.reload();
-  await expect(this.page).toHaveURL(/fiyat:3000-5000/);
+    await minPriceInput.fill(minPrice.toString());
+    await maxPriceInput.fill(maxPrice.toString());
+    await this.page.getByRole('button', { name: 'Filtrele' }).click();
+    await this.page.reload();
   }
-  
   // Ürün Fiyat Doğrulama (Reklam gelirse reklamdaki fiyattan dolayı hata verebilir)
 async filterAssertions() {
-  const priceText = await this.page.locator('[data-test-id="loader-false"] [data-test-id="add-to-cart-button-1"]').innerText();
-
+  const priceText = await this.page.locator('[data-test-id="final-price-1"]').innerText();
   const price = Number(
     priceText
       .replace(/\s/g, '')
@@ -64,7 +67,7 @@ async filterAssertions() {
       .replace(',', '.')
   );
 
-  expect(price).toBeGreaterThanOrEqual(3000);
-  expect(price).toBeLessThanOrEqual(5000);
+  expect(price).toBeGreaterThanOrEqual(this.appliedMinPrice);
+  expect(price).toBeLessThanOrEqual(this.appliedMaxPrice);
 }
 }

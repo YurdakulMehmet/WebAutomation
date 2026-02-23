@@ -17,10 +17,10 @@ test('has title', async ({ page }) => {
 
   // Ürün listeleme sayfasında doğrulama ve filtreleme işlemleri
   await productListPage.checkListPage();
-  await productListPage.filterBySize();
-  await productListPage.filterByGender();
-  await productListPage.filterByColor();
-  await productListPage.filterByPrice();
+  await productListPage.filterBySize("39");
+  await productListPage.filterByGender("Erkek");
+  await productListPage.filterByColor("Beyaz");
+  await productListPage.filterByPrice(3000, 5000);
   await productListPage.filterAssertions();
 
   // Detay sayfasına gitme ve doğrulama işlemleri
